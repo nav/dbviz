@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block head %}
+{{ super() }}
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/css/select2.min.css" rel="stylesheet" />
+{% endblock %}
+
+{% block content %}
+    <form class="form-connect" method="get" action="" id="table-form">
+        <div class="form-group row">
+            <label for="select-table">Select table to visualize</label>
+            <select name="table" class="form-control" id="select-table">
+                {% for table in db.tables %}
+                <option value="{{ table.name }}">{{ table.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </form>
+{% endblock %}
+
+{% block script %}
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
+    <script type="text/javascript">
+     $(document).ready(function() {
+         var $form = $('#table-form');
+         var $element = $("#select-table");
+         $element.select2();
+         $element.on("select2:select", function (e) { $form.submit(); });
+     });
+    </script>
+{% endblock %}

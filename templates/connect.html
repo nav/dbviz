@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+
+{% block content %}
+    <form class="form-connect" method="post" action="">
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label" for="database-host">Host</label>
+            <div class="col-sm-10">
+                <input type="text" name="host" value="127.0.0.1" class="form-control" id="database_host" placeholder="database-host.example.com:3306">
+            </div>
+        </div>
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label" for="database-user">User</label>
+            <div class="col-sm-10">
+                <input type="text" name="user" value="root" class="form-control" id="database-user" placeholder="username">
+            </div>
+        </div>
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label" for="database-password">Password</label>
+            <div class="col-sm-10">
+                <input type="password" name="password" class="form-control" id="database-password">
+            </div>
+        </div>
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label" for="database-name">Name</label>
+            <div class="col-sm-10">
+                <input type="text" name="name" class="form-control" id="database-name" placeholder="northwind">
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-10 offset-sm-2">
+                <button type="submit" class="btn btn-primary">Connect</button>
+            </div>
+        </div>
+    </form>
+{% endblock %}
