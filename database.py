@@ -216,21 +216,21 @@ def generate_dot_diagram(table: Table):
             )
         return output
 
-    def render_table(table):
+    def render_table(table, *, is_primary=False):
         return f"""<<table cellspacing="0" cellborder="0">
-        <tr><td bgcolor="aliceblue">{spc}{table.name}{spc}</td></tr>
+        <tr><td bgcolor="{ '#FDEDEC' if is_primary else 'aliceblue'}">{spc}{table.name}{spc}</td></tr>
         {render_columns(table.columns)}{spc}
         </table>>"""
 
     dot = Digraph(
         name=f"Visualize {table.name}",
-        graph_attr=dict(),
+        graph_attr=dict(ranksep="1.5"),
         node_attr=dict(shape="plaintext", fontname="sans-serif", margin="0"),
     )
     inbound_tables = []
     outbound_tables = []
 
-    dot.node(table.name, label=render_table(table))
+    dot.node(table.name, label=render_table(table, is_primary=True))
 
     for column in table.columns:
         if column.inbound_related_tables:
@@ -242,11 +242,19 @@ def generate_dot_diagram(table: Table):
             outbound_tables.append((column, column.outbound_related_table))
 
     for column, related_table in inbound_tables:
-        dot.node(related_table.name, render_table(related_table))
+        dot.node(
+            related_table.name,
+            render_table(related_table),
+            href=f"/?table={related_table.name}",
+        )
         dot.edge(related_table.name, f"{table.name}:{column.name}")
 
     for column, related_table in outbound_tables:
-        dot.node(related_table.name, render_table(related_table))
+        dot.node(
+            related_table.name,
+            render_table(related_table),
+            href=f"/?table={related_table.name}",
+        )
         dot.edge(f"{table.name}:{column.name}", f"{related_table.name}")
 
     return dot
