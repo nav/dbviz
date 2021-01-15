@@ -8,12 +8,15 @@ import MySQLdb
 from graphviz import Digraph
 from pydantic import BaseModel, validator
 
+from colours import ColourMode, Colours
+
 
 class Config(BaseModel):
     host: str
     user: str
     password: str
     name: str
+    colour_mode: ColourMode = ColourMode.LIGHT
 
     def connect(self, Backend: DatabaseBackend) -> typing.Optional[Database]:
         backend = Backend(self)
@@ -24,6 +27,7 @@ class Config(BaseModel):
 
         tables = backend.get_tables()
         database = Database(backend=backend, tables=tables)
+
         return database
 
 
@@ -201,30 +205,42 @@ class MySQL(DatabaseBackend):
         return table
 
 
-def generate_dot_diagram(table: Table):
+def generate_dot_diagram(table: Table, colour_mode: ColourMode):
+    colours = Colours(colour_mode)
     spc = "&nbsp;&nbsp;&nbsp;"
 
     def render_columns(columns):
         output = ""
         for index, column in enumerate(columns):
-            bgcolor = "#f4f6f6"
+            bgcolour = "#f4f6f6"
+            bgcolour = colours("column", "bg_odd")
             if index % 2 == 0:
-                bgcolor = "white"
+                bgcolour = "white"
+                bgcolour = colours("column", "bg_even")
+
+            text_colour = colours("column", "text")
+            subtext_colour = colours("column", "subtext")
+
             output += (
-                f"""<tr><td port="{column.name}" align="left" bgcolor="{bgcolor}">"""
-                f"""{column.name}{spc}<font color="#abb2b9">{column.type}</font>{spc}</td></tr>"""
+                f"""<tr><td port="{column.name}" align="left" bgcolor="{bgcolour}">"""
+                f"""<font color="{text_colour}">{column.name}{spc}</font>"""
+                f"""<font color="{subtext_colour}">{column.type}</font>{spc}</td></tr>"""
             )
         return output
 
     def render_table(table, *, is_primary=False):
+        bgcolour = colours("table", "bg_head")
+        if is_primary:
+            bgcolour = colours("table", "bg_head_primary")
+
         return f"""<<table cellspacing="0" cellborder="0">
-        <tr><td bgcolor="{ '#FDEDEC' if is_primary else 'aliceblue'}">{spc}{table.name}{spc}</td></tr>
+        <tr><td bgcolor="{bgcolour}">{spc}{table.name}{spc}</td></tr>
         {render_columns(table.columns)}{spc}
         </table>>"""
 
     dot = Digraph(
         name=f"Visualize {table.name}",
-        graph_attr=dict(ranksep="1.5"),
+        graph_attr=dict(ranksep="1.5", bgcolor=colours("graph", "bg")),
         node_attr=dict(shape="plaintext", fontname="sans-serif", margin="0"),
     )
     inbound_tables = []
