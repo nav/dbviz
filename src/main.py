@@ -1,17 +1,23 @@
 import typing
-from pydantic import BaseModel
-from starlette.responses import RedirectResponse
-from fastapi import FastAPI, Request, Form, HTTPException
-from fastapi.responses import HTMLResponse
-from fastapi.templating import Jinja2Templates
-import database
 
+from fastapi import FastAPI, Form, Request
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from starlette.responses import RedirectResponse
+
+import database
 
 templates = Jinja2Templates(directory="templates")
 
 app = FastAPI()
-config: typing.Optional[database.Config] = None
-db: typing.Optional[database.Database] = None
+config: typing.Optional[database.Config] = database.Config(
+    host="127.0.0.1",
+    user="root",
+    password="procurify",
+    name="businesstemplate",
+)
+db: typing.Optional[database.Database] = config.connect(database.MySQL)
 
 
 @app.on_event("shutdown")
@@ -31,9 +37,15 @@ async def root(request: Request, table: str = ""):
         table = db.backend.populate_columns_for_table(table)
         table = db.backend.populate_outbound_related_tables(table)
         table = db.backend.populate_inbound_related_tables(table)
-        dot = database.generate_dot_diagram(table)
+        dot = database.generate_dot_diagram(table, config.colour_mode)
         return templates.TemplateResponse(
-            "viewer.html", {"request": request, "table": table, "dot": dot}
+            "viewer.html",
+            {
+                "request": request,
+                "colour_mode": config.colour_mode,
+                "table": table,
+                "dot": dot,
+            },
         )
 
     return templates.TemplateResponse("index.html", {"request": request, "db": db})
@@ -65,3 +77,6 @@ async def save_connection(
         db = _db
         return RedirectResponse(url="/", status_code=301)
     return dict(error="Could not connect")
+
+
+app.mount("/static", StaticFiles(directory="static"), name="static")

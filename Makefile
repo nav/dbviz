@@ -19,5 +19,5 @@ install: ## Install dependencies
 
 .PHONY: run
 run: ## Run application
-	${PIPENV_RUN} uvicorn main:app
+	${PIPENV_RUN} uvicorn main:app --reload
 

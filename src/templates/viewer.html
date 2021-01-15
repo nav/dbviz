@@ -2,15 +2,25 @@
 
 {% block head %}
 <style type="text/css" media="screen">
+ body {
+     background-color:{% if colour_mode.value == "dark" %}#242424{% else %}white{% endif %};
+ }
  #graph svg {
     height: 100%;
     width: auto;
-  }
+ }
+ #logo {
+     width: 114px;
+     position: absolute;
+     top: 10px;
+     left: 10px;
+ }
 </style>
 
 {% endblock %}
 
 {% block content %}
+<img src="/static/dbviz-{{ colour_mode.value }}.png" id="logo">
 <div id="graph" style="text-align: center;"></div>
 {% endblock %}
 
