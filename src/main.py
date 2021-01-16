@@ -1,23 +1,20 @@
 import typing
 
-from fastapi import FastAPI, Form, Request
+from fastapi import FastAPI, Form, Request, Query
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from starlette.responses import RedirectResponse
+from starlette.responses import RedirectResponse, JSONResponse
 
 import database
+import diagram
+import colour
 
 templates = Jinja2Templates(directory="templates")
 
 app = FastAPI()
-config: typing.Optional[database.Config] = database.Config(
-    host="127.0.0.1",
-    user="root",
-    password="procurify",
-    name="businesstemplate",
-)
-db: typing.Optional[database.Database] = config.connect(database.MySQL)
+db: typing.Optional[database.Database] = None
+colour_mode: typing.Optional[colour.ColourMode] = colour.ColourMode.LIGHT
 
 
 @app.on_event("shutdown")
@@ -27,9 +24,14 @@ async def shutdown_event():
 
 
 @app.get("/", response_class=HTMLResponse)
-async def root(request: Request, table: str = ""):
-    if config is None:
-        return RedirectResponse(url="/connect")
+async def root(
+    request: Request,
+    table: str = Query(None),
+):
+    context = dict(request=request, db=db, colour_mode=colour_mode)
+
+    if db is None:
+        return templates.TemplateResponse("connect.html", context)
 
     columns = []
     if table:
@@ -37,46 +39,36 @@ async def root(request: Request, table: str = ""):
         table = db.backend.populate_columns_for_table(table)
         table = db.backend.populate_outbound_related_tables(table)
         table = db.backend.populate_inbound_related_tables(table)
-        dot = database.generate_dot_diagram(table, config.colour_mode)
-        return templates.TemplateResponse(
-            "viewer.html",
-            {
-                "request": request,
-                "colour_mode": config.colour_mode,
-                "table": table,
-                "dot": dot,
-            },
-        )
 
-    return templates.TemplateResponse("index.html", {"request": request, "db": db})
+        dot = diagram.generate_dot_diagram(table, colour_mode)
+        context.update({"table": table, "dot": dot})
+        return templates.TemplateResponse("viewer.html", context)
 
-
-@app.get("/connect", response_class=HTMLResponse)
-async def connect(request: Request):
-    global config
-    config = None
-    return templates.TemplateResponse("connect.html", {"request": request})
+    return templates.TemplateResponse("viewer.html", context)
 
 
 @app.post("/connect")
-async def save_connection(
-    request: Request,
-    host: str = Form(...),
-    user: str = Form(...),
-    password: typing.Optional[str] = Form(''),
-    name: str = Form(...),
-):
-
-    _config = database.Config(host=host, user=user, password=password, name=name)
-    _db = _config.connect(database.MySQL)
-
-    if _db is not None:
-        global config
+async def save_connection(connection: database.Connection):
+    try:
+        _db = database.Database.connect(database.MySQL, connection)
+    except Exception as e:
+        return JSONResponse(dict(error=str(e)), status_code=400)
+    else:
         global db
-        config = _config
         db = _db
-        return RedirectResponse(url="/", status_code=301)
-    return dict(error="Could not connect")
+    return dict(status="OK")
+
+
+@app.post("/colour-mode")
+async def save_colour_mode():
+    global colour_mode
+
+    if colour_mode == colour.ColourMode.LIGHT:
+        colour_mode = colour.ColourMode.DARK
+    else:
+        colour_mode = colour.ColourMode.LIGHT
+
+    return dict(status="OK")
 
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
