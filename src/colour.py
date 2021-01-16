@@ -16,18 +16,19 @@ class ColourModeValue(BaseModel):
 
 COLOURS = {
     "graph": {
-        "bg": ColourModeValue(light="white", dark="#242424"),
+        "bg": ColourModeValue(light="#f5f5f5", dark="#242424"),
+        "edge": ColourModeValue(light="", dark="#444444"),
     },
     "table": {
-        "text": ColourModeValue(light="black", dark="#f4f6f6"),
-        "bg_head": ColourModeValue(light="#f2f9ff", dark="#5a6369"),
-        "bg_head_primary": ColourModeValue(light="#fdedec", dark="#887575"),
+        "bg_head": ColourModeValue(light="#DDF0FF", dark="#DDF0FF"),
+        "bg_head_primary": ColourModeValue(light="#FDEDEC", dark="#FDEDEC"),
+        "text": ColourModeValue(light="", dark=""),
     },
     "column": {
         "text": ColourModeValue(light="", dark="#999999"),
-        "subtext": ColourModeValue(light="#abb2b9", dark="#f4f6f6"),
-        "bg_odd": ColourModeValue(light="white", dark="#242424"),
-        "bg_even": ColourModeValue(light="#f5f7f7", dark="#414141"),
+        "subtext": ColourModeValue(light="#ABB2B9", dark="#666666"),
+        "bg_odd": ColourModeValue(light="#F2F6F8", dark="#333333"),
+        "bg_even": ColourModeValue(light="#FFFFFF", dark="#444444"),
     },
 }
 

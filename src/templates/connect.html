@@ -34,4 +34,33 @@
             </div>
         </div>
     </form>
+
+    <script type="text/javascript">
+     const form = document.forms[0];
+
+     function createConnection(event) {
+        event.preventDefault();
+        const formData = new FormData(event.target);
+        const postData = Object.fromEntries(formData);
+
+        fetch('/connect', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(postData),
+        }).then(response => {
+            if (!response.ok) {
+                throw response;
+            } else {
+                window.location.reload();
+            }
+        }).catch(function(response) {
+            response.json().then(resp => {
+                window.alert(resp.error);
+            })
+        });;
+     }
+
+     form.onsubmit = createConnection;
+    </script>
+
 {% endblock %}
