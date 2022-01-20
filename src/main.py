@@ -51,7 +51,7 @@ async def save_connection(
     request: Request,
     host: str = Form(...),
     user: str = Form(...),
-    password: str = Form(...),
+    password: typing.Optional[str] = Form(''),
     name: str = Form(...),
 ):
 
