@@ -9,11 +9,12 @@ def generate_dot_diagram(table: Table, colour_mode: ColourMode):
     spc = "&nbsp;&nbsp;&nbsp;"
 
     def render_table(table, *, is_primary=False):
+        bordercolour = colours("table", "border")
         bgcolour = colours("table", "bg_head")
         if is_primary:
             bgcolour = colours("table", "bg_head_primary")
 
-        return f"""<<table cellpadding="0" cellspacing="0" cellborder="0">
+        return f"""<<table cellpadding="0" cellspacing="0" cellborder="0" color="{bordercolour}">
         <tr>
         <td bgcolor="{bgcolour}" cellpadding="2">
             <b>{table.name}</b>{spc}

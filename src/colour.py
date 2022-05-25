@@ -16,16 +16,17 @@ class ColourModeValue(BaseModel):
 
 COLOURS = {
     "graph": {
-        "bg": ColourModeValue(light="#f5f5f5", dark="#242424"),
-        "edge": ColourModeValue(light="", dark="#444444"),
+        "bg": ColourModeValue(light="#F5F5F5", dark="#242424"),
+        "edge": ColourModeValue(light="", dark="#DDDDDD"),
     },
     "table": {
+        "border": ColourModeValue(light="#000000", dark="#DDDDDD"),
         "bg_head": ColourModeValue(light="#DDF0FF", dark="#DDF0FF"),
         "bg_head_primary": ColourModeValue(light="#FDEDEC", dark="#FDEDEC"),
         "text": ColourModeValue(light="", dark=""),
     },
     "column": {
-        "text": ColourModeValue(light="", dark="#999999"),
+        "text": ColourModeValue(light="", dark="#DDDDDD"),
         "subtext": ColourModeValue(light="#ABB2B9", dark="#666666"),
         "bg_odd": ColourModeValue(light="#F2F6F8", dark="#333333"),
         "bg_even": ColourModeValue(light="#FFFFFF", dark="#444444"),
