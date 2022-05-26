@@ -18,16 +18,16 @@
       <nav>
         <img src="/static/dbviz-{{ colour_mode.value }}.png" id="logo">
 
-        {% if db %}
         <form class="form-connect" method="get" action="" id="table-form">
+        {% if db %}
             <select name="table" class="form-control" id="select-table">
                 <option>Select table to visualize</option>
                 {% for table in db.tables %}
                 <option value="{{ table.name }}">{{ table.name }}</option>
                 {% endfor %}
             </select>
-        </form>
         {% endif %}
+        </form>
 
         <a class="btn btn-link btn-lg text-decoration-none" id="change-colour-mode">{% if colour_mode.value == "dark" %}☀️{% else %}🌚{% endif %}</a>
       </nav>
