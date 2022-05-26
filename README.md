@@ -1,5 +1,5 @@
 <p align="center">
-    <img width="183px" src="https://raw.githubusercontent.com/nav/dbviz/master/docs/img/dbviz-light.png" alt='DBviz'>
+    <img width="183px" src="https://raw.githubusercontent.com/nav/dbviz/master/src/static/dbviz-light.png" alt='DBviz'>
 </p>
 <p align="center">
     <em>A tool to visualize databases.</em>
@@ -42,7 +42,7 @@ $ make run
 
 ## Demo
 
-![DBViz Demo](https://raw.githubusercontent.com/nav/dbviz/master/docs/img/demo.gif)
+![DBViz Demo](https://raw.githubusercontent.com/nav/dbviz/master/docs/demo.gif)
 
 <p align="center">&mdash;</p>
 <p align="center"><i>DBviz is <a href="https://github.com/nav/dbviz/blob/master/LICENSE">MIT licensed</a> code.</i></p>

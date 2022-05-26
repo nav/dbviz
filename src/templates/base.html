@@ -7,62 +7,42 @@
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/css/select2.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="/static/style.css" type="text/css" media="screen" />
+    
     <title>Database Visualizer</title>
-
-    {% block head %}
-     <style type="text/css" media="screen">
-     html,
-     body {
-         height: 100%;
-     }
-
-     body {
-         display: -ms-flexbox;
-         display: -webkit-box;
-         display: flex;
-         -ms-flex-align: center;
-         -ms-flex-pack: center;
-         -webkit-box-align: center;
-         align-items: center;
-         -webkit-box-pack: center;
-         justify-content: center;
-         background-color: #f5f5f5;
-     }
-
-     .form-connect {
-         width: 100%;
-         max-width: 600px;
-         padding: 15px;
-         margin: 0 auto;
-     }
-     .form-connect .checkbox {
-         font-weight: 400;
-     }
-     .form-connect .form-control {
-         position: relative;
-         box-sizing: border-box;
-         height: auto;
-         padding: 10px;
-         font-size: 16px;
-     }
-     .form-connect .form-control:focus {
-         z-index: 2;
-     }
-    </style>
-    {% endblock %}
+    {% block head %}{% endblock %}
 
   </head>
-  <body>
-    {% block content %}
-    <h1>Hello, world!</h1>
+  <body class="{{ colour_mode.value }}-mode">
+      <nav>
+        <img src="/static/dbviz-{{ colour_mode.value }}.png" id="logo">
 
-    {% endblock %}
+        {% if db %}
+        <form class="form-connect" method="get" action="" id="table-form">
+            <select name="table" class="form-control" id="select-table">
+                <option>Select table to visualize</option>
+                {% for table in db.tables %}
+                <option value="{{ table.name }}">{{ table.name }}</option>
+                {% endfor %}
+            </select>
+        </form>
+        {% endif %}
+
+        <a class="btn btn-link btn-lg text-decoration-none" id="change-colour-mode">{% if colour_mode.value == "dark" %}☀️{% else %}🌚{% endif %}</a>
+      </nav>
+
+      <div id="container">
+          {% block content %}{% endblock %}
+      </div>
+
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
+    <script type="text/javascript" src="/static/main.js"></script>
 
     {% block script %}{% endblock %}
   </body>

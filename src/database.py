@@ -5,35 +5,24 @@ import abc
 import typing
 
 import MySQLdb
-from graphviz import Digraph
 from pydantic import BaseModel, validator
+from colour import ColourMode, Colours
 
 
-class Config(BaseModel):
+class Connection(BaseModel):
     host: str
     user: str
     password: str
     name: str
 
-    def connect(self, Backend: DatabaseBackend) -> typing.Optional[Database]:
-        backend = Backend(self)
-        is_connected = backend.connect()
-
-        if not is_connected:
-            return None
-
-        tables = backend.get_tables()
-        database = Database(backend=backend, tables=tables)
-        return database
-
 
 class DatabaseBackend(abc.ABC):
-    def __init__(self, config: Config):
-        self.config = config
-        self.connection = None
+    def __init__(self, connection: Connection):
+        self.connection = connection
+        self.db_connection = None
 
     @abc.abstractmethod
-    def connect(self, config: Config) -> bool:
+    def connect(self, connection: Connection) -> bool:
         raise NotImplementedError()
 
     @abc.abstractmethod
@@ -81,28 +70,29 @@ class Database(BaseModel):
     class Config:
         arbitrary_types_allowed = True
 
+    @classmethod
+    def connect(cls, backend: DatabaseBackend, connection: Connection):
+        _backend = backend(connection)
+        is_connected = _backend.connect()
+
+        tables = _backend.get_tables()
+        database = Database(backend=_backend, tables=tables)
+        return database
+
 
 class MySQL(DatabaseBackend):
-    def connect(self) -> bool:
-        try:
-            connection = MySQLdb.connect(
-                host=self.config.host,
-                user=self.config.user,
-                passwd=self.config.password,
-                db=self.config.name,
-            )
-        except MySQLdb.Error as e:
-            return False
-        else:
-            self.connection = connection
-            return True
+    def connect(self):
+        db_connection = MySQLdb.connect(
+            host=self.connection.host,
+            user=self.connection.user,
+            passwd=self.connection.password,
+            db=self.connection.name,
+        )
+        self.db_connection = db_connection
 
     def get_tables(self) -> typing.List[Table]:
-        if self.connection is None:
-            raise ValueError("Not connected to database.")
-
         try:
-            cursor = self.connection.cursor()
+            cursor = self.db_connection.cursor()
             query = "SHOW TABLES"
             cursor.execute(query)
             rows = cursor.fetchall()
@@ -115,11 +105,8 @@ class MySQL(DatabaseBackend):
         return tables
 
     def populate_columns_for_table(self, table: Table) -> Table:
-        if self.connection is None:
-            raise ValueError("Not connected to database.")
-
         try:
-            cursor = self.connection.cursor()
+            cursor = self.db_connection.cursor()
             query = f"DESCRIBE {table.name}"
             cursor.execute(query)
             rows = cursor.fetchall()
@@ -140,11 +127,8 @@ class MySQL(DatabaseBackend):
         return table
 
     def populate_outbound_related_tables(self, table: Table) -> Table:
-        if self.connection is None:
-            raise ValueError("Not connected to database.")
-
         try:
-            cursor = self.connection.cursor()
+            cursor = self.db_connection.cursor()
             query = """
             SELECT column_name, referenced_table_name, referenced_column_name
             FROM  information_schema.key_column_usage
@@ -153,7 +137,7 @@ class MySQL(DatabaseBackend):
               AND table_schema = %s
             ORDER BY referenced_table_name;
             """.strip()
-            cursor.execute(query, [table.name, self.config.name])
+            cursor.execute(query, [table.name, self.connection.name])
             rows = cursor.fetchall()
         finally:
             cursor.close()
@@ -170,11 +154,8 @@ class MySQL(DatabaseBackend):
         return table
 
     def populate_inbound_related_tables(self, table):
-        if self.connection is None:
-            raise ValueError("Not connected to database.")
-
         try:
-            cursor = self.connection.cursor()
+            cursor = self.db_connection.cursor()
             query = """
             SELECT column_name, table_name, referenced_column_name
             FROM information_schema.key_column_usage
@@ -182,7 +163,7 @@ class MySQL(DatabaseBackend):
                 AND referenced_table_schema = %s
             ORDER BY referenced_table_name
             """.strip()
-            cursor.execute(query, [table.name, self.config.name])
+            cursor.execute(query, [table.name, self.connection.name])
             rows = cursor.fetchall()
         finally:
             cursor.close()
@@ -199,65 +180,6 @@ class MySQL(DatabaseBackend):
             column.inbound_related_tables.append(related_table)
 
         return table
-
-
-def generate_dot_diagram(table: Table):
-    spc = "&nbsp;&nbsp;&nbsp;"
-
-    def render_columns(columns):
-        output = ""
-        for index, column in enumerate(columns):
-            bgcolor = "#f4f6f6"
-            if index % 2 == 0:
-                bgcolor = "white"
-            output += (
-                f"""<tr><td port="{column.name}" align="left" bgcolor="{bgcolor}">"""
-                f"""{column.name}{spc}<font color="#abb2b9">{column.type}</font>{spc}</td></tr>"""
-            )
-        return output
-
-    def render_table(table, *, is_primary=False):
-        return f"""<<table cellspacing="0" cellborder="0">
-        <tr><td bgcolor="{ '#FDEDEC' if is_primary else 'aliceblue'}">{spc}{table.name}{spc}</td></tr>
-        {render_columns(table.columns)}{spc}
-        </table>>"""
-
-    dot = Digraph(
-        name=f"Visualize {table.name}",
-        graph_attr=dict(ranksep="1.5"),
-        node_attr=dict(shape="plaintext", fontname="sans-serif", margin="0"),
-    )
-    inbound_tables = []
-    outbound_tables = []
-
-    dot.node(table.name, label=render_table(table, is_primary=True))
-
-    for column in table.columns:
-        if column.inbound_related_tables:
-            inbound_tables.extend(
-                [(column, table) for table in column.inbound_related_tables]
-            )
-
-        if column.outbound_related_table:
-            outbound_tables.append((column, column.outbound_related_table))
-
-    for column, related_table in inbound_tables:
-        dot.node(
-            related_table.name,
-            render_table(related_table),
-            href=f"/?table={related_table.name}",
-        )
-        dot.edge(related_table.name, f"{table.name}:{column.name}")
-
-    for column, related_table in outbound_tables:
-        dot.node(
-            related_table.name,
-            render_table(related_table),
-            href=f"/?table={related_table.name}",
-        )
-        dot.edge(f"{table.name}:{column.name}", f"{related_table.name}")
-
-    return dot
 
 
 Column.update_forward_refs()

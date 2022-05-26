@@ -1,41 +1,35 @@
 {% extends "base.html" %}
 
-{% block head %}
-<style type="text/css" media="screen">
- #graph svg {
-    height: 100%;
-    width: auto;
-  }
-</style>
-
-{% endblock %}
-
 {% block content %}
-<div id="graph" style="text-align: center;"></div>
+    {% if dot %}
+        <div id="graph" style="text-align: center;"></div>
+    {% endif %}        
 {% endblock %}
 
 {% block script %}
 <script src="//d3js.org/d3.v5.min.js"></script>
 <script src="https://unpkg.com/@hpcc-js/wasm@0.3.11/dist/index.min.js"></script>
 <script src="https://unpkg.com/d3-graphviz@3.0.5/build/d3-graphviz.js"></script>
+
+{% if dot %}
 <script>
- var graph_source = `
+ const graph_source = `
  {{ dot.source|safe }}
  `;
 
- var margin = 20;
- var width = window.innerWidth - margin;
- var height = window.innerHeight - margin;
+ const ymargin = 20;
+ const xmargin = 75;
  var graphviz = d3.select("#graph").graphviz()
-    .on("initEnd", render);
-
+                  .on("initEnd", render);
  function render() {
     graphviz
-        .width(width)
-        .height(height)
+        .width(window.innerWidth - ymargin)
+        .height(window.innerHeight - xmargin)
         .fit(true)
+        .scale(.95)
         .renderDot(graph_source)
  }
 
 </script>
+{% endif %}
 {% endblock %}
