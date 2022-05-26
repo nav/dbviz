@@ -20,8 +20,7 @@ colour_mode: typing.Optional[colour.ColourMode] = colour.ColourMode.LIGHT
 @app.on_event("shutdown")
 async def shutdown_event():
     if db is not None:
-        db.backend.connection.close()
-
+        db.backend.db_connection.close()
 
 @app.get("/", response_class=HTMLResponse)
 async def root(

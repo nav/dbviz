@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <form class="form-connect" method="post" action="">
+    <form class="form-connect" id="form-connect" method="post" action="">
         <div class="form-group row">
             <label class="col-sm-2 col-form-label" for="database-host">Host</label>
             <div class="col-sm-10">
@@ -35,7 +35,7 @@
     </form>
 
     <script type="text/javascript">
-     const form = document.forms[0];
+     const form = document.getElementById('form-connect');
 
      function createConnection(event) {
         event.preventDefault();
