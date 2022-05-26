@@ -1,20 +1,5 @@
 {% extends "base.html" %}
 
-{% block head %}
-
-<style type="text/css" media="screen">
- body {
-     background-color:{% if colour_mode.value == "dark" %}#242424{% else %}white{% endif %};
-  }
-
-  nav {
-    background-color:{% if colour_mode.value == "dark" %}#292828{% else %}#ececec{% endif %};
-    border-bottom: 1px solid {% if colour_mode.value == "dark" %}#333{% else %}#ccc{% endif %};
-  }
-  
-</style>
-{% endblock %}
-
 {% block content %}
     {% if dot %}
         <div id="graph" style="text-align: center;"></div>

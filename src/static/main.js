@@ -11,8 +11,8 @@ document.addEventListener("DOMContentLoaded", function (event) {
 });
 
 // Colour mode change
-// function updateColourMode(event) {
-//   fetch("/colour-mode", { method: "POST" });
-// }
-// const changeColourModeButton = document.getElementById("change-colour-mode");
-// changeColourModeButton.onclick = updateColourMode;
+function updateColourMode(event) {
+  fetch("/colour-mode", { method: "POST" }).then(response =>  location.reload());
+}
+const changeColourModeButton = document.getElementById("change-colour-mode");
+changeColourModeButton.onclick = updateColourMode;

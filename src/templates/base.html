@@ -14,7 +14,7 @@
     {% block head %}{% endblock %}
 
   </head>
-  <body>
+  <body class="{{ colour_mode.value }}-mode">
       <nav>
         <img src="/static/dbviz-{{ colour_mode.value }}.png" id="logo">
 
@@ -28,6 +28,8 @@
             </select>
         </form>
         {% endif %}
+
+        <a class="btn btn-link btn-lg text-decoration-none" id="change-colour-mode">{% if colour_mode.value == "dark" %}☀️{% else %}🌚{% endif %}</a>
       </nav>
 
       <div id="container">
